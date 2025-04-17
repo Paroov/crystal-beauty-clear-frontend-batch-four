@@ -1,4 +1,45 @@
+import { useState } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+
 export default function LoginPage() {
+
+    const [email,setEmail] = useState("")
+    const [password,setPassword] = useState("")
+    const navigate= useNavigate()
+
+
+    function handleLogin(){
+        console.log("Email:",email);
+        console.log("Password",password);
+
+        axios.post(import.meta.env.VITE_BACKEND_URL+"/api/user/login",{
+            email:email,
+            password:password
+        }).then(
+            (response)=>{
+                console.log("Login successful",response.data);
+                toast.success("Login successful");
+                localStorage.setItem("token",response.data.token)
+                //const token = localStorage.getItem("token")
+                const user = response.data.user;
+                if(user.role == "admin" ){
+                    navigate("/admin")
+                }else{
+                    navigate("/")
+                }
+
+            }
+        ).catch(
+            (error)=>{
+                console.log("Login failed",error.response.data);
+                toast.error(error.response.data.message|| "Login failed");
+            }
+        )
+
+        console.log("Login Button Clicked");
+    }
     return (
         <div className="w-full h-screen bg-[url(/login_bg.jpg)] bg-cover bg-center flex">
              <div className="w-[50%] h-full">
@@ -7,9 +48,17 @@ export default function LoginPage() {
 
              <div className="w-[50%] h-full flex justify-center items-center ">
                 <div className="w-[450px] h-[600px] backdrop-blur-xl shadow-xl rounded-xl flex flex-col justify-center items-center">
-                    <input className="w-[400px] h-[50px] border border-red-500 rounded-xl text-center m-[5px]" type="email" placeholder="Email" />
-                    <input className="w-[400px] h-[50px] border border-red-500 rounded-xl text-center m-[5px]" type="password" placeholder="Password" />
-                    <button className="w-[400px] h-[50px] bg-green-500 text-white rounded-xl cursor-pointer ">Login</button>
+                    <input onChange={
+                        (e)=>{
+                            setEmail(e.target.value);
+
+                    }}className="w-[400px] h-[50px] border border-red-500 rounded-xl text-center m-[5px]" type="email" placeholder="Email" />
+                    <input onChange={
+                        (e)=>{
+                            setPassword(e.target.value);
+
+                    }} className="w-[400px] h-[50px] border border-red-500 rounded-xl text-center m-[5px]" type="password" placeholder="Password" />
+                    <button onClick={handleLogin} className="w-[400px] h-[50px] bg-green-500 text-white rounded-xl cursor-pointer ">Login</button>
 
 
                 </div>
