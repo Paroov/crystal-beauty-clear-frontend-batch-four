@@ -1,18 +1,20 @@
 import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
 
     const [email,setEmail] = useState("")
     const [password,setPassword] = useState("")
+    const [loading,setLoading] = useState(false)
     const navigate= useNavigate()
 
 
+
     function handleLogin(){
-        console.log("Email:",email);
-        console.log("Password",password);
+       
+        setLoading(true)    
 
         axios.post(import.meta.env.VITE_BACKEND_URL+"/api/user/login",{
             email:email,
@@ -29,12 +31,14 @@ export default function LoginPage() {
                 }else{
                     navigate("/")
                 }
+                setLoading(false)   
 
             }
         ).catch(
             (error)=>{
                 console.log("Login failed",error.response.data);
                 toast.error(error.response.data.message|| "Login failed");
+                setLoading(false)   
             }
         )
 
@@ -58,7 +62,19 @@ export default function LoginPage() {
                             setPassword(e.target.value);
 
                     }} className="w-[400px] h-[50px] border border-red-500 rounded-xl text-center m-[5px]" type="password" placeholder="Password" />
-                    <button onClick={handleLogin} className="w-[400px] h-[50px] bg-green-500 text-white rounded-xl cursor-pointer ">Login</button>
+                    <button onClick={handleLogin} className="w-[400px] h-[50px] bg-green-500 text-white rounded-xl cursor-pointer ">
+                        {
+                            loading?"Loading...":"Login"
+
+                        }
+                        </button>
+                        <p className="text-gray-600 text-center m-[10px]">
+                            Don't have an account yet?
+                            &nbsp;
+                            <span className="text-green-500 cursor-pointer hover:text-green-700">
+                                <Link to ={"/register"}>Register Now</Link>
+                            </span>
+                        </p>
 
 
                 </div>

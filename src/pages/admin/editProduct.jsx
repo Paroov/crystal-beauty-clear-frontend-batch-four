@@ -2,26 +2,36 @@
 import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Link,useNavigate } from "react-router-dom";
+import { Link,useLocation,useNavigate } from "react-router-dom";
 import mediaUpload from "../../utils/mediaUpload.jsx";
 
 
-export default function AddProductForm(){
+export default function EditProductForm(){
 
-    const [productId,setProductId]=useState("");
-    const [name,setName]=useState("");
-    const [altNames,setAltNames]=useState("");
-    const [description,setDescription]=useState("");
-    const [price,setPrice]=useState("");
-    const [labeledPrice,setLabeledPrice]=useState("");
-    const [stock,setStock]=useState("");
-    const [image,setImages]=useState([]);
+    const locationData = useLocation()
     const navigate = useNavigate();
+    
+    if(locationData.state==null){
+        toast.error("Please select a product to edit")
+        window.location.href="/admin/products"
+        
+    }
+
+    const [productId,setProductId]=useState(locationData.state.productId);
+    const [name,setName]=useState(locationData.state.name);
+    const [altNames,setAltNames]=useState(locationData.state.altNames.join(","));
+    const [description,setDescription]=useState(locationData.state.description);
+    const [price,setPrice]=useState(locationData.state.price);
+    const [labeledPrice,setLabeledPrice]=useState(locationData.state.labeledPrice); 
+    const [stock,setStock]=useState(locationData.state.stock);
+    const [image,setImages]=useState([]);
+    
 
 
 
 
     async function handleSubmit(){
+        
         const promisesArray = []
         
         for(let i=0; i<image.length; i++){
@@ -31,7 +41,12 @@ export default function AddProductForm(){
 
         try{
 
-                const result = await Promise.all(promisesArray)
+                let result = await Promise.all(promisesArray)
+
+                if(image.length == 0){
+                    result = locationData.state.image
+
+                }
         
         
                 const altNamesInArray = altNames.split(",")
@@ -49,17 +64,17 @@ export default function AddProductForm(){
                 console.log(token);
         
                 await axios
-                    .post(import.meta.env.VITE_BACKEND_URL+"/api/product", product, {
+                    .put(import.meta.env.VITE_BACKEND_URL+"/api/product/"+productId, product, {
                             headers: {
                             "Authorization": "Bearer " + token,
                         },
                 })
 
-                toast.success("Product Added Successfully!");
+                toast.success("Product Updated Successfully!");
                 navigate("/admin/products");
 
             }catch(error){
-                 toast.error("Product Adding  Failed!")
+                 toast.error("Product Updating  Failed!")
                 console.log(error)
         }
        
@@ -70,8 +85,9 @@ export default function AddProductForm(){
         <div className="w-full h-screen rounded-lg flex justify-center items-center">
             <div className="w-[500px] h-[600px] bg-white rounded-lg shadow-lg flex flex-col justify-center items-center">
 
-            <h1 className="text-3xl font-bold text-gray-700 m-[10px]">Add Products</h1>
+            <h1 className="text-3xl font-bold text-gray-700 m-[10px]">Edit Products</h1>
             <input 
+            disabled
             value={productId}
             onChange={
                 (e)=>{
@@ -166,7 +182,9 @@ export default function AddProductForm(){
         
             <div className="w-[400px] h-[100px] flex justify-between items-center rounded-lg">
                 <Link to={"/admin/products"} className="bg-red-500 text-white p-[10px] rounded-lg hover:bg-red-600 text-center w-[180px]">Cancel</Link>
-                <button onClick={handleSubmit} className="bg-green-500 cursor-pointer text-white p-[10px] w-[180px] text-center rounded-lg ml-[10px] hover:bg-green-600">Add Products</button>
+                <button onClick={handleSubmit} className="bg-green-500 cursor-pointer text-white p-[10px] w-[180px] text-center rounded-lg ml-[10px] hover:bg-green-600">
+                    Edit Product
+                </button>
             </div>
 
             </div>
